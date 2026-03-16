@@ -1,5 +1,5 @@
 fastapi
 uvicorn
-TTS
+edge-tts
 numpy==1.24.3
 scipy
