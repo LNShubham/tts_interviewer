@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Interviewer Tester</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding: 50px; background: #f8f9fa; }
+        .card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); display: inline-block; width: 450px; }
+        textarea { width: 95%; height: 100px; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin: 15px 0; font-size: 14px; }
+        button { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:disabled { background: #6c757d; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h3>🎙️ AI Interviewer Voice</h3>
+    <textarea id="textInput">Welcome to the interview! I've analyzed your resume and I'm impressed by your experience with AWS Architecture. Can you tell me more about your VPC configuration?</textarea>
+    <br>
+    <button id="playBtn">Generate & Speak</button>
+    <p id="status" style="color: #555; font-size: 13px; margin-top: 15px;">Ready</p>
+</div>
+
+<script>
+    const playBtn = document.getElementById('playBtn');
+    const textInput = document.getElementById('textInput');
+    const status = document.getElementById('status');
+
+    playBtn.onclick = async () => {
+        const text = textInput.value;
+        if (!text) return;
+
+        playBtn.disabled = true;
+        status.innerText = "Connecting to TTS API...";
+
+        try {
+            const response = await fetch('http://localhost:8000/tts', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+
+            if (!response.ok) throw new Error("API Error");
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            
+            status.innerText = "Playing audio...";
+            audio.play();
+            
+            audio.onended = () => {
+                status.innerText = "Finished.";
+                playBtn.disabled = false;
+            };
+
+        } catch (err) {
+            status.innerText = "Error: Is the FastAPI server running?";
+            playBtn.disabled = false;
+        }
+    };
+</script>
+</body>
+</html>
